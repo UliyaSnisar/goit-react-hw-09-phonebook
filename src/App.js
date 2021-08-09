@@ -1,69 +1,82 @@
-import React, { Component, Suspense, lazy } from 'react';
-import { connect } from 'react-redux';
+import { Component, Suspense, lazy } from 'react';
 import { Switch } from 'react-router-dom';
-import routes from './routes';
-import './styles.css';
-import AppBar from './Component/AppNavBar';
-import Spinner from './Component/Loader';
-import Container from './Component/Container';
+import { connect } from 'react-redux';
+
+import { Container } from '@material-ui/core';
+
 import { authOperations } from './redux/auth';
-import PrivateRoute from './Component/PrivateRoute';
-import PublicRoute from './Component/PublicRoute';
-// import ContactForm from './Component/ContactForm';
-// import Filter from './Component/Filter';
-// import ContactList from './Component/ContactList';
-const HomeView = lazy(() =>
-  import('./views/HomeView.js' /* webpackChunkName: "home-view" */),
-);
-const RegisterView = lazy(() =>
-  import('./views/RegisterView' /*webpackChunkName: "register-view" */),
-);
-const LoginView = lazy(() =>
-  import('./views/LoginView' /*webpackChunkName: "login-view" */),
-);
-const ContactsView = lazy(() =>
-  import('./views/ContactsView' /*webpackChunkName: "contacts-view" */),
-);
+// import { authSelectors } from './redux/auth';
+
+import PrivateRoute from './components/PrivateRoute';
+import PublicRoute from './components/PublicRoute';
+
+// import Container from './components/Container';
+import AppBar from './components/AppBar';
+
+import CircularProgress from '@material-ui/core/CircularProgress';
+
+// import HomePage from './components/HomePage';
+// import ContactsView from './components/ContactsView';
+// import Register from './components/Register';
+// import Login from './components/Login';
+
+// import Message from './components/Message';
+
+import './App.scss';
+
+const HomePage = lazy(() => import('./components/HomePage'));
+const ContactsView = lazy(() => import('./components/ContactsView'));
+const Register = lazy(() => import('./components/Register'));
+const Login = lazy(() => import('./components/Login'));
 
 class App extends Component {
   componentDidMount() {
     this.props.onGetCurrentUser();
   }
+
   render() {
     return (
-      <>
+      // <div className="App">
+      <Container fixed>
         <AppBar />
-        <Container>
-          <Suspense fallback={<Spinner />}>
-            <Switch>
-              <PublicRoute exact path={routes.home} component={HomeView} />
-              <PublicRoute
-                path={routes.register}
-                restricted
-                redirectTo={routes.home}
-                component={RegisterView}
-              />
-              <PublicRoute
-                path={routes.login}
-                restricted
-                redirectTo={routes.home}
-                component={LoginView}
-              />
-              <PrivateRoute
-                path={routes.contacts}
-                component={ContactsView}
-                redirectTo={routes.login}
-              />
-            </Switch>
-          </Suspense>
-        </Container>
-      </>
+        {/* <Message /> */}
+        {/* {!!this.props.error && <Message />} */}
+        <Suspense fallback={<CircularProgress className="progress" />}>
+          <Switch>
+            <PublicRoute exact path="/" component={HomePage} />
+            <PublicRoute
+              path="/register"
+              restricted
+              redirectTo="/contacts"
+              component={Register}
+            />
+            <PublicRoute
+              path="/login"
+              restricted
+              redirectTo="/contacts"
+              component={Login}
+            />
+            <PrivateRoute
+              path="/contacts"
+              redirectTo="/"
+              component={ContactsView}
+            />
+          </Switch>
+        </Suspense>
+      </Container>
+      // </div>
     );
   }
 }
+
+// const mapStateToProps = (state) => ({
+//   error: authSelectors.getError(state),
+// });
 
 const mapDispatchToProps = {
   onGetCurrentUser: authOperations.getCurrentUser,
 };
 
 export default connect(null, mapDispatchToProps)(App);
+// export default connect(mapStateToProps, mapDispatchToProps)(App);
+// export default App;
